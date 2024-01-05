@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+body {
+    font-family: Arial, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh; /* ให้สูงเต็มหน้าจอ */
+    margin: 0;
+    background-color: #1a1a1a;
+    color: #fff;
+}
+
+header {
+    text-align: center;
+    padding: 5% 0; /* ให้ระยะห่างด้านบนและด้านล่างเท่ากับ 5% ของหัวเว็บ */
+}
+
+header h1 {
+    margin: 0;
+}
+
+.container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 5%; /* ให้ระยะห่างด้านบนเท่ากับ 5% ของคอนเทนเนอร์ */
+}
+
+#toggleButton {
+    padding: 20% 30%; /* ให้ขนาดปุ่มมีขนาดพื้นที่ตามข้อความด้วย 3% ด้านบนและด้านล่าง 6% ด้านซ้ายและด้านขวา */
+    font-size: 5vw; /* ให้ขนาดตัวอักษรของปุ่มเท่ากับ 2.5% ของความกว้างของหน้าจอ */
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    background-color: #4CAF50;
+    color: white;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    transition-duration: 0.4s;
+}
+
+label {
+    margin-top: 4%; /* ให้ระยะห่างด้านบนของ label เท่ากับ 2% ของหน้าจอ */
+    margin-right: 4%; /* ให้ระยะห่างด้านขวาของ label เท่ากับ 1% ของหน้าจอ */
+    display: block;
+}
+
+input[type="time"] {
+    padding: 6% 10%; /* ให้ขนาด input เท่ากับ 1.5% ด้านบนและด้านล่าง 3% ด้านซ้ายและด้านขวา */
+    border-radius: 3px;
+    border: 1px solid #ccc;
+    background-color: #2b2b2b;
+    color: #fff;
+    width: 60%; /* ให้ input กว้างเท่ากับ 30% ของคอนเทนเนอร์ */
+    margin-bottom: 8%; /* ให้ระยะห่างด้านล่างของ input เท่ากับ 2% ของหน้าจอ */
+}
+    </style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
+  <title>ControlLight</title>
+</head>
+<body>
+  
+  <div class="container">
+      <header>
+          <h1>Light Control</h1>
+      </header>
+        <button id="toggleButton">Turn On</button>
+      
+        <label for="TurnOnTime">ตั้งเวลาเปิด:</label>
+        <input type="time" name="TurnOnTime" id="TurnOnTime">
+    
+        <label for="TurnOffTime">ตั้งเวลาปิด:</label>
+        <input type="time" name="TurnOffTime" id="TurnOffTime">
+    </div>
+<script>
+    // Switch Control
+    document.addEventListener('DOMContentLoaded', function() {
+      var button = document.getElementById('toggleButton');
+      button.addEventListener('click', async function(event) {
+        event.preventDefault();
+        var currentState = button.textContent.trim();
+        // Turn On
+        if (currentState === 'Turn On') {
+          button.textContent = 'Turning On...';
+          button.style.backgroundColor = '#e74c3c';
+          try {
+            const response = await fetch('http://192.168.235.121/light/on', { method: 'POST' });
+            console.log('ไฟเปิดแล้ว:', response);
+            if (response.ok) {
+              button.textContent = 'Turn On';
+              button.style.backgroundColor = '#4CAF50';
+            } else {
+              throw new Error('เกิดข้อผิดพลาดในการเปิดไฟ');
+            }
+          } catch (error) {
+            console.error('เกิดข้อผิดพลาดในการเปิดไฟ:', error);
+            button.textContent = 'Turn Off';
+            button.style.backgroundColor = '#807471';
+          }
+        }
+        // Turn OFF
+        if (currentState === 'Turn Off') {
+          button.textContent = 'Turning Off...';
+          button.style.backgroundColor = '#e74c3c';
+          try {
+            const response = await fetch('http://192.168.235.121/light/off', { method: 'POST' });
+            console.log('ไฟปิดแล้ว:', response);
+            if (response.ok) {
+              button.textContent = 'Turn Off';
+              button.style.backgroundColor = '#807471';
+            } else {
+              throw new Error('เกิดข้อผิดพลาดในการปิดไฟ');
+            }
+          } catch (error) {
+            console.error('เกิดข้อผิดพลาดในการปิดไฟ:', error);
+            button.textContent = 'Turn On';
+            button.style.backgroundColor = '#4CAF50';
+          }
+        }
+      });
+    });
+    var turnOnTimeInput = document.getElementById('TurnOnTime');
+    var turnOffTimeInput = document.getElementById('TurnOffTime');
+
+function checkTimeAndTriggerActions() {
+    var currentTime = new Date();
+    var currentHours = currentTime.getHours();
+    var currentMinutes = currentTime.getMinutes();
+    var currentTimeString = currentHours + ':' + currentMinutes;
+
+    if (currentTimeString === turnOnTimeInput.value) {
+        fetch('http://192.168.235.121/light/on', { method: 'POST' })
+            .then(response => {
+                console.log('ไฟเปิดแล้ว:', response);
+                // You can add further actions if needed upon successful response
+            })
+            .catch(error => console.error('Error turning on the light:', error));
+    }
+
+    if (currentTimeString === turnOffTimeInput.value) {
+        fetch('http://192.168.235.121/light/off', { method: 'POST' })
+            .then(response => {
+                console.log('ไฟปิดแล้ว:', response);
+                // You can add further actions if needed upon successful response
+            })
+            .catch(error => console.error('Error turning off the light:', error));
+    }
+}
+
+// Call the function initially
+checkTimeAndTriggerActions();
+
+// Set interval to check every minute (30000 milliseconds)
+setInterval(checkTimeAndTriggerActions, 30000);
+</script>
+</body>
+</html>
